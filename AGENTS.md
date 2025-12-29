@@ -35,7 +35,7 @@ When hiding elements in the DOM, always use `element.style.display = 'none'`. Do
 
 Maintain the "Premium" aesthetic defined in `popup.css`:
 - **Theme**: High-contrast dark mode (`#0d1117`).
-- **Typography**: Inter (via Google Fonts).
+- **Typography**: Native font stack.
 - **Effects**: Glassmorphism (`rgba(...)` backgrounds with subtle blurs) and vibrant blue accents (`#1f6feb`).
 
 ## Common pitfalls
