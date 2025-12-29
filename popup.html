@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unsplash Landscape</title>
+  <link rel="stylesheet" href="popup.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M3 19V5C3 3.89543 3.89543 3 5 3H19C20.1046 3 21 3.89543 21 5V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19Z"
+            stroke="currentColor" stroke-width="2" />
+          <path d="M3 14.5L8.5 9L13.5 14L16.5 11L21 15.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" />
+          <circle cx="8" cy="7.5" r="1.5" fill="currentColor" />
+        </svg>
+        <h1>Unsplash Landscape</h1>
+      </div>
+    </header>
+
+    <main>
+      <div class="setting-item">
+        <div class="setting-info">
+          <h2>Landscape Only</h2>
+          <p>Hides portrait and square photos</p>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="landscapeOnly" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-info">
+          <h2>Exclude Unsplash+</h2>
+          <p>Hides premium subscriber content</p>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="excludePlus" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </main>
+
+    <footer>
+      <button id="refreshBtn">Apply & Refresh Page</button>
+    </footer>
+  </div>
+  <script src="popup.js"></script>
+</body>
+
+</html>
