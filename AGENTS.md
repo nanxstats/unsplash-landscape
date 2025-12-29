@@ -13,10 +13,11 @@ Unsplash frequently updates its class names via CSS modules. Rely on semantic ta
 
 ### Search Query Parameters
 
-To leverage server-side filtering (more performant than DOM hiding):
+*Proactive redirection is the primary filtering strategy for search pages.* To leverage server-side filtering (more performant and cleaner than DOM hiding):
 - `orientation=landscape`: Forces horizontal images.
 - `license=free`: Excludes premium/contributor-only results.
-- **Redirection Logic**: `content.js` monitors URL changes. If parameters are missing on `/s/photos/*` paths, it triggers a `window.location.replace()`.
+- **Redirection Logic**: `content.js` monitors URL changes via `popstate` and `MutationObserver` checks. If parameters are missing on `/s/photos/*` paths, it triggers a `window.location.replace()`.
+- **SPA Note**: Unsplash uses client-side routing. Redirection must be triggered even when the browser doesn't do a full page reload.
 
 ### Settings Persistence
 

@@ -58,12 +58,14 @@ const filterImages = () => {
     });
 };
 
-// Handle Search Redirection to leverage Unsplash's native filters
+// Handle Search Redirection
 const handleSearchFilters = () => {
     chrome.storage.local.get(['landscapeOnly', 'excludePlus'], (settings) => {
         const { landscapeOnly = true, excludePlus = true } = settings;
 
         const url = new URL(window.location.href);
+
+        // Target search result pages
         if (!url.pathname.startsWith('/s/photos/')) return;
 
         let changed = false;
@@ -79,14 +81,26 @@ const handleSearchFilters = () => {
         }
 
         if (changed) {
+            // Replace allows going back without getting stuck in a loop
             window.location.replace(url.toString());
         }
     });
 };
 
+// Periodic check for URL changes (necessary for SPAs where history API might not trigger popstate on pushState)
+let lastUrl = location.href;
+const checkUrlChange = () => {
+    if (location.href !== lastUrl) {
+        lastUrl = location.href;
+        handleSearchFilters();
+        filterImages();
+    }
+};
+
 // Observe changes for infinite scroll
-const observer = new MutationObserver((mutations) => {
+const observer = new MutationObserver(() => {
     filterImages();
+    checkUrlChange(); // Catch any URL changes during scroll/navigation
 });
 
 // Initialize
@@ -99,6 +113,12 @@ const init = () => {
         childList: true,
         subtree: true
     });
+
+    // Listen for back/forward navigation
+    window.addEventListener('popstate', () => {
+        handleSearchFilters();
+        filterImages();
+    });
 };
 
 // Run init
@@ -108,7 +128,7 @@ if (document.readyState === 'loading') {
     init();
 }
 
-// Listen for messages from popup to re-filter immediately
+// Listen for messages from popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'refresh') {
         handleSearchFilters();
