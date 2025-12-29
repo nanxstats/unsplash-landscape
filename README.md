@@ -4,9 +4,9 @@ A Chrome extension designed to make your Unsplash experience more productive. It
 
 ## Features
 
-- **Landscape filter**: One-click toggle to hide all portrait and square images, focusing exclusively on horizontal shots.
-- **Hide Unsplash+**: Automatically filters out subscriber-only content, ensuring all visible photos are free to use.
-- **Native search optimization**: When searching, the extension automatically applies Unsplash's native `orientation=landscape` and `license=free` filters for the best performance and highest quality results.
+- **Landscape filter**: One-click toggle to hide all portrait and square images, to focus on horizontal photos.
+- **Hide Unsplash+**: Filters out subscriber-only content.
+- **Native search optimization**: When searching, automatically applies Unsplash's native `orientation=landscape` and `license=free` filters.
 - **Dynamic grid updates**: Uses a background `MutationObserver` to ensure new images are filtered instantly as you scroll through the infinite grid.
 
 ## Installation
