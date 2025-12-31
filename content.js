@@ -33,7 +33,11 @@ const filterImages = () => {
         const { landscapeOnly = true, excludePlus = true } = settings;
 
         // Target photo containers (figures or specific divs)
+        // We look for elements that haven't been marked as invalid yet to avoid re-processing unnecessarily,
+        // but we must re-check everything in case settings changed.
         const containers = document.querySelectorAll('figure, div[data-testid="photo-grid-multi-col-figure"], div[data-testid="asset-grid-masonry-figure"]');
+
+        let hiddenCount = 0;
 
         containers.forEach(container => {
             let shouldHide = false;
@@ -49,13 +53,65 @@ const filterImages = () => {
             }
 
             if (shouldHide) {
-                container.style.display = 'none';
+                container.setAttribute('data-filtered', 'hidden');
+                hiddenCount++;
             } else {
-                // Reset if settings changed or it was previously hidden
-                container.style.display = '';
+                // Mark as valid to reveal it (CSS handles the opacity transition)
+                container.setAttribute('data-filtered', 'valid');
             }
         });
+        
+        // After filtering, check if we need to load more
+        if (hiddenCount > 0) {
+            checkViewportFill();
+        }
     });
+};
+
+/* --- Gap Filling / Aggressive Loading --- */
+const checkViewportFill = () => {
+    // If the distance to the bottom of the page is small, or if the document height is 
+    // suspiciously close to the viewport height (meaning content was hidden), trigger a scroll.
+    
+    const scrollBottom = window.scrollY + window.innerHeight;
+    const docHeight = document.documentElement.scrollHeight;
+    
+    // Threshold: if we are within 2 viewports of the bottom, load more.
+    // Unsplash usually triggers slightly before the bottom.
+    // If we hid a lot of stuff, the "bottom" might have effectively moved up.
+    if (docHeight - scrollBottom < window.innerHeight * 2) {
+        // Nudge scroll to trigger Unsplash's infinite scroll listener
+        // We use a small scrollBy. If we are already at the bottom, this might not do much,
+        // so we might need to verify if distinct "load more" button exists (rare in infinite scroll).
+        // A tiny scroll event often wakes up the framework.
+        window.scrollBy(0, 1);
+        window.scrollBy(0, -1);
+    }
+};
+
+/* --- CSS Pre-hiding --- */
+const injectStyles = () => {
+    const style = document.createElement('style');
+    style.textContent = `
+        /* Hide potentially problematic containers by default until verified */
+        figure:not([data-filtered]),
+        div[data-testid="photo-grid-multi-col-figure"]:not([data-filtered]),
+        div[data-testid="asset-grid-masonry-figure"]:not([data-filtered]) {
+            opacity: 0 !important;
+        }
+
+        /* Reveal valid ones smoothly */
+        [data-filtered="valid"] {
+            opacity: 1 !important;
+            transition: opacity 0.2s ease-in;
+        }
+
+        /* Keep invalid ones hidden (display: none takes them out of layout) */
+        [data-filtered="hidden"] {
+            display: none !important;
+        }
+    `;
+    document.head.appendChild(style);
 };
 
 // Handle Search Redirection
@@ -105,6 +161,7 @@ const observer = new MutationObserver(() => {
 
 // Initialize
 const init = () => {
+    injectStyles(); // Add CSS first
     handleSearchFilters();
     filterImages();
 
