@@ -60,22 +60,100 @@ const filterImages = () => {
                 container.setAttribute('data-filtered', 'valid');
             }
         });
-        
+
         // After filtering, check if we need to load more
         if (hiddenCount > 0) {
             checkViewportFill();
         }
+
+        // Run the equalizer
+        balanceColumns(containers);
     });
+};
+
+/* --- Layout Equalizer --- */
+const balanceColumns = (containers) => {
+    // 1. Identify Columns
+    const columnsMap = new Map();
+    containers.forEach(container => {
+        const parent = container.parentElement;
+        if (!columnsMap.has(parent)) {
+            columnsMap.set(parent, []);
+        }
+        columnsMap.get(parent).push(container);
+    });
+
+    const columns = Array.from(columnsMap.keys());
+
+    // Only proceed if we have multiple columns (usually 2 or 3)
+    if (columns.length < 2) return;
+
+    // 2. "Reset" Phase: Unhide everything temporarily to measure true heights.
+    // We are trusting the browser's layout cycle here. 
+    // Changes to display/classes within the same synchronous execution block 
+    // allow us to read updated offsets (causing reflow) but won't paint until we finish.
+    containers.forEach(c => {
+        if (c.getAttribute('data-balanced') === 'hidden') {
+            c.removeAttribute('data-balanced');
+        }
+    });
+
+    // 3. Measure Heights
+    // We use scrollHeight to get the full height of the column content
+    const heights = columns.map(c => c.scrollHeight);
+    const minHeight = Math.min(...heights);
+
+    // Threshold: Allow columns to be taller than the shortest one by this amount (e.g., 1000px).
+    // An average portrait is maybe 600-800px. 1000px gives a buffer of ~2 images.
+    // If it's too tight, scrolling feels "stuck" because the tall columns end abruptly.
+    // If it's too loose, the "imbalance" is visible.
+    const threshold = 1000;
+    const limit = minHeight + threshold;
+
+    // 4. Hide Excess
+    columns.forEach((col, index) => {
+        if (heights[index] > limit) {
+            // This column is too tall. We need to hide items starting from the bottom
+            // until we are effectively back under the limit (visually).
+
+            // We only hide items that are currently "valid" (visible). 
+            // We ignored "hidden" (filtered) items already.
+
+            // We get the items in THESE columns from our map, reverse them to start from bottom
+            const items = columnsMap.get(col).reverse();
+
+            for (const item of items) {
+                // Skip if already filtered out by the main filter (landscape check)
+                if (item.getAttribute('data-filtered') === 'hidden') continue;
+
+                // Check position
+                // Note: offsetTop is relative to the offsetParent (which is likely the column or container).
+                // We use (offsetTop + offsetHeight) to find the bottom edge of the image.
+                const bottomEdge = item.offsetTop + item.offsetHeight;
+
+                if (bottomEdge > limit) {
+                    item.setAttribute('data-balanced', 'hidden');
+                } else {
+                    // Once we hit an item that is within the limit, we stop hiding for this column
+                    // because everything above it is definitely within limit (ascending order).
+                    break;
+                }
+            }
+        }
+    });
+
+    // Note: We don't verify filling here, `checkViewportFill` handles the "too empty" case 
+    // which might occur if minHeight is very small.
 };
 
 /* --- Gap Filling / Aggressive Loading --- */
 const checkViewportFill = () => {
     // If the distance to the bottom of the page is small, or if the document height is 
     // suspiciously close to the viewport height (meaning content was hidden), trigger a scroll.
-    
+
     const scrollBottom = window.scrollY + window.innerHeight;
     const docHeight = document.documentElement.scrollHeight;
-    
+
     // Threshold: if we are within 2 viewports of the bottom, load more.
     // Unsplash usually triggers slightly before the bottom.
     // If we hid a lot of stuff, the "bottom" might have effectively moved up.
@@ -107,7 +185,8 @@ const injectStyles = () => {
         }
 
         /* Keep invalid ones hidden (display: none takes them out of layout) */
-        [data-filtered="hidden"] {
+        [data-filtered="hidden"],
+        [data-balanced="hidden"] {
             display: none !important;
         }
     `;
