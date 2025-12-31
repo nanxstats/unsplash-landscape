@@ -31,6 +31,14 @@ Unsplash frequently updates its class names via CSS modules. Rely on semantic ta
 
 When hiding elements in the DOM, always use `element.style.display = 'none'`. Do not remove elements from the DOM, as this can break Unsplash's own React/internal state and cause layout jitters during infinite scroll.
 
+### Smart UX features
+
+To handle the side effects of aggressive filtering (for example, flashing content, empty viewports, unbalanced columns), the following mechanisms are in place:
+
+1.  **CSS pre-hiding**: Global styles inject `opacity: 0` for all new image containers by default. They are only revealed (`opacity: 1`) after `content.js` validates them. This prevents "flashing" of filtered content.
+2.  **Gap filling**: A `checkViewportFill()` function triggers a micro-scroll event if the viewport becomes too empty after filtering, forcing Unsplash's infinite scroll to load the next batch immediately.
+3.  **Layout equalizer**: `balanceColumns()` monitors the height of the grid columns. If one column grows significantly taller than others (due to filtering skew), the script temporarily hides the bottom-most images in that column to keep the bottom edge of the grid aligned.
+
 ### UI consistency
 
 Maintain the "Premium" aesthetic defined in `popup.css`:
