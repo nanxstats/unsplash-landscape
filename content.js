@@ -15,6 +15,27 @@ const isUnsplashPlus = (element) => {
     return false;
 };
 
+// Helper to check if an image is Promoted
+const isPromoted = (element) => {
+    // Check for "Promoted" text in potential sponsor labels
+    // We look for specific text "Promoted" which is usually in a span or div
+    // We also check for the advertise link which is a very strong signal
+    const advertiseLink = element.querySelector('a[href*="/advertise"]');
+    if (advertiseLink) return true;
+
+    // Fallback: check text content for "Promoted" but be careful not to catch partial matches in titles
+    // The "Promoted" label is usually short and standalone.
+    // We can search specifically within elements that might contain it if we knew the class,
+    // but the user provided classes are hashed.
+    // However, the "Promoted" text appears in: <a ...>Promoted</a>
+    const links = element.querySelectorAll('a');
+    for (const link of links) {
+        if (link.textContent.trim() === 'Promoted') return true;
+    }
+
+    return false;
+};
+
 // Helper to check if an image is landscape
 const isLandscape = (img) => {
     if (!img) return true; // Fail safe
@@ -29,8 +50,8 @@ const isLandscape = (img) => {
 
 // Main filter function
 const filterImages = () => {
-    chrome.storage.local.get(['landscapeOnly', 'excludePlus'], (settings) => {
-        const { landscapeOnly = true, excludePlus = true } = settings;
+    chrome.storage.local.get(['landscapeOnly', 'excludePlus', 'hidePromoted'], (settings) => {
+        const { landscapeOnly = true, excludePlus = true, hidePromoted = true } = settings;
 
         // Target photo containers (figures or specific divs)
         // We look for elements that haven't been marked as invalid yet to avoid re-processing unnecessarily,
@@ -49,6 +70,10 @@ const filterImages = () => {
             }
 
             if (excludePlus && isUnsplashPlus(container)) {
+                shouldHide = true;
+            }
+
+            if (hidePromoted && isPromoted(container)) {
                 shouldHide = true;
             }
 
@@ -195,7 +220,7 @@ const injectStyles = () => {
 
 // Handle Search Redirection
 const handleSearchFilters = () => {
-    chrome.storage.local.get(['landscapeOnly', 'excludePlus'], (settings) => {
+    chrome.storage.local.get(['landscapeOnly', 'excludePlus', 'hidePromoted'], (settings) => {
         const { landscapeOnly = true, excludePlus = true } = settings;
 
         const url = new URL(window.location.href);
