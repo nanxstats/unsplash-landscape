@@ -7,9 +7,10 @@ This document serves as a technical reference for AI agents maintaining or exten
 ### DOM selectors
 
 Unsplash frequently updates its class names via CSS modules. Rely on semantic tags or `data-testid` where possible:
-- **Image Containers**: Primary grid elements are `<figure>`. Some variations use `div[data-testid="asset-grid-masonry-figure"]`.
-- **Premium Indicators**: Look for the string "Unsplash+" within a container or links containing `/plus`.
-- **Infinite Scroll**: Handled via `MutationObserver` in `content.js`. Any DOM manipulation must be re-run on subtree additions.
+- **Image containers**: Primary grid elements are `<figure>`. Some variations use `div[data-testid="asset-grid-masonry-figure"]`.
+- **Premium indicators**: Look for the string "Unsplash+" within a container or links containing `/plus`.
+- **Promoted content**: Identified by links to `/advertise` or text content "Promoted".
+- **Infinite scroll**: Handled via `MutationObserver` in `content.js`. Any DOM manipulation must be re-run on subtree additions.
 
 ### Search query parameters
 
