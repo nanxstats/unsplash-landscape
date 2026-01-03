@@ -1,15 +1,19 @@
 document.addEventListener('DOMContentLoaded', () => {
     const landscapeToggle = document.getElementById('landscapeOnly');
     const plusToggle = document.getElementById('excludePlus');
+    const promotedToggle = document.getElementById('hidePromoted');
     const refreshBtn = document.getElementById('refreshBtn');
 
     // Load saved settings
-    chrome.storage.local.get(['landscapeOnly', 'excludePlus'], (result) => {
+    chrome.storage.local.get(['landscapeOnly', 'excludePlus', 'hidePromoted'], (result) => {
         if (result.landscapeOnly !== undefined) {
             landscapeToggle.checked = result.landscapeOnly;
         }
         if (result.excludePlus !== undefined) {
             plusToggle.checked = result.excludePlus;
+        }
+        if (result.hidePromoted !== undefined) {
+            promotedToggle.checked = result.hidePromoted;
         }
     });
 
@@ -17,12 +21,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveSettings = () => {
         chrome.storage.local.set({
             landscapeOnly: landscapeToggle.checked,
-            excludePlus: plusToggle.checked
+            excludePlus: plusToggle.checked,
+            hidePromoted: promotedToggle.checked
         });
     };
 
     landscapeToggle.addEventListener('change', saveSettings);
     plusToggle.addEventListener('change', saveSettings);
+    promotedToggle.addEventListener('change', saveSettings);
 
     // Send message to content script to refresh filters
     refreshBtn.addEventListener('click', () => {
